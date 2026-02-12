@@ -1,14 +1,7 @@
 /**
  * server.js
  * --------------------------------------------------
- * Main entry point of the Blog Application.
- * Initializes Express server, middleware, routes,
- * health check endpoint, and logging.
- *
- * FUTURE IMPROVEMENT AREA:
- * - Add authentication middleware
- * - Add rate limiting
- * - Add centralized logging system
+ * Entry point of Blog Application.
  */
 
 require("dotenv").config();
@@ -18,35 +11,46 @@ const cors = require("cors");
 const blogRoutes = require("./routes/blogRoutes");
 
 const app = express();
-
-// Environment configuration
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+/* --------------------- MIDDLEWARE --------------------- */
+
+// Enable CORS
 app.use(cors());
+
+// Parse JSON body
 app.use(express.json());
 
-// Logging middleware
+// Request Logger
 app.use((req, res, next) => {
-  console.log(`📌 ${req.method} ${req.url}`);
+  console.log(`📌 ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// Routes
+/* --------------------- ROUTES --------------------- */
+
 app.use("/api", blogRoutes);
 
-// Health check endpoint (IMPORTANT for monitoring system)
+// Health Check Endpoint
 app.get("/health", (req, res) => {
-  res.json({ status: "running" });
+  res.status(200).json({
+    success: true,
+    message: "Server is running",
+  });
 });
 
-// Global error handler
+/* --------------------- GLOBAL ERROR HANDLER --------------------- */
+
 app.use((err, req, res, next) => {
-  console.error("🔥 Server Error:", err.stack);
-  res.status(500).json({ error: "Internal Server Error" });
+  console.error("🔥 Unhandled Error:", err.stack);
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+  });
 });
 
-// Start server
+/* --------------------- START SERVER --------------------- */
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
